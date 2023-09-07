@@ -23,6 +23,7 @@ from sklearn.svm import SVR, SVC
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.neural_network import MLPRegressor, MLPClassifier
 from sklearn.naive_bayes import GaussianNB
+import joblib
 
 
 def perform_ML(df, target_col, task):
@@ -112,9 +113,7 @@ def perform_ML(df, target_col, task):
     # Display the results DataFrame
     print(results_df)
     st.dataframe(results_df)
-
-
-
+    return X_train,y_train,X_test,y_test,target_col,task,results_df,df
 
 with st.sidebar:
     st.title("AutoML")
@@ -152,5 +151,28 @@ if navOptions == "ML":
 
 
 if navOptions == "Download":
-    pass
+    st.subheader("Save a Trained Model")
+    X_train,y_train,X_test,y_test,target_col,task,results_df,df = perform_ML()
 
+    if task == "Classification":
+        st.subheader("Select a Classification Model to Save")
+        classification_models = {
+            'Decision Tree Classifier': DecisionTreeClassifier(),
+            'Random Forest Classifier': RandomForestClassifier(),
+            'Support Vector Classifier': SVC(),
+            'K-Nearest Neighbors Classifier': KNeighborsClassifier(),
+            'Neural Network Classifier': MLPClassifier()
+        }
+        selected_model = st.selectbox("Select a Classification Model", list(classification_models.keys()))
+
+    elif task == "Regression":
+        st.subheader("Select a Regression Model to Save")
+        regression_models = {
+            'Linear Regression': LinearRegression(),
+            'Decision Tree': DecisionTreeRegressor(),
+            'Random Forest': RandomForestRegressor(),
+            'Support Vector Regressor': SVR(),
+            'K-Nearest Neighbors': KNeighborsRegressor(),
+            'Neural Network': MLPRegressor()
+        }
+        selected_model = st.selectbox("Select a Regression Model", list(regression_models.keys()))
