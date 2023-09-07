@@ -1,19 +1,11 @@
 #importing libraries:
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import os
-
 import streamlit as st
 import ydata_profiling as ydp
 import streamlit_pandas_profiling as st_profile
 from streamlit_pandas_profiling import st_profile_report
-
-import numpy as np
-import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score, f1_score, classification_report
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, accuracy_score, f1_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -22,11 +14,11 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.svm import SVR, SVC
 from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
 from sklearn.neural_network import MLPRegressor, MLPClassifier
-from sklearn.naive_bayes import GaussianNB
 import joblib
-
+import os
 
 def perform_ML(df, target_col, task):
+
     # Handle categorical features (assuming they are already encoded as integers)
     categorical_features = []  # Add the column names of categorical features here
 
@@ -113,11 +105,27 @@ def perform_ML(df, target_col, task):
     # Display the results DataFrame
     print(results_df)
     st.dataframe(results_df)
-    return X_train,y_train,X_test,y_test,target_col,task,results_df,df
+    st.subheader("Save the best model")
+    d_btn = st.button("Save the best model") 
+    if d_btn:
+        # Determine the best model based on the evaluation metric
+        if task == 'regression':
+    # For regression, find the model with the lowest Mean Squared Error
+            best_model_name = results_df['Mean Squared Error'].idxmin()
+
+        elif task == 'classification':
+            best_model_name = results_df['F1 Score'].idxmax()
+
+        best_model = models[best_model_name]
+
+        # Save the best model to a file
+        model_filename = f'best_{task}_{best_model_name}model.pkl'
+        joblib.dump(best_model, model_filename)
+        st.write(f"Saved the best {task} model as '{model_filename}'")
 
 with st.sidebar:
     st.title("AutoML")
-    navOptions = st.radio("Navigation", ["Home", "EDA", "ML", "Download"])
+    navOptions = st.radio("Navigation", ["Home", "EDA", "ML"])
     st.info("An automated machine learning tool that performs EDA and provides a downloadable model for the uploaded dataset.\n\n~UHHDVasishtPranav😶‍🌫️")
 
 if os.path.exists("uploadedFile.csv"):
@@ -145,34 +153,28 @@ if navOptions == "ML":
     #to select the reg or classif
     reg_or_classif = st.radio("Regression or Classification", ["Regression", "Classification"])
     if reg_or_classif == "Regression":
+        task = "regression"
         perform_ML(df_main, target_col, task="regression")
     elif reg_or_classif == "Classification":
+        task = "classification"
         perform_ML(df_main, target_col, task="classification")
 
 
-if navOptions == "Download":
-    st.subheader("Save a Trained Model")
-    X_train,y_train,X_test,y_test,target_col,task,results_df,df = perform_ML()
 
-    if task == "Classification":
-        st.subheader("Select a Classification Model to Save")
-        classification_models = {
-            'Decision Tree Classifier': DecisionTreeClassifier(),
-            'Random Forest Classifier': RandomForestClassifier(),
-            'Support Vector Classifier': SVC(),
-            'K-Nearest Neighbors Classifier': KNeighborsClassifier(),
-            'Neural Network Classifier': MLPClassifier()
-        }
-        selected_model = st.selectbox("Select a Classification Model", list(classification_models.keys()))
 
-    elif task == "Regression":
-        st.subheader("Select a Regression Model to Save")
-        regression_models = {
-            'Linear Regression': LinearRegression(),
-            'Decision Tree': DecisionTreeRegressor(),
-            'Random Forest': RandomForestRegressor(),
-            'Support Vector Regressor': SVR(),
-            'K-Nearest Neighbors': KNeighborsRegressor(),
-            'Neural Network': MLPRegressor()
-        }
-        selected_model = st.selectbox("Select a Regression Model", list(regression_models.keys()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#app made with the help of Nicholas Renotte's video on youtube, streamlit documentation along with the help of packages like ydata_profiling, streamlit_pandas_profiling, joblib, sklearn, pandas, numpy, os, etc.
